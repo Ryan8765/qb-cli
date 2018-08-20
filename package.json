@@ -35,5 +35,8 @@
     "quickbase": "^2.10.0",
     "simple-git": "^1.96.0",
     "touch": "^3.1.0"
+  },
+  "bin": {
+    "qbdeploy": "./index.js"
   }
 }
