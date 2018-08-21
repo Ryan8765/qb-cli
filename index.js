@@ -129,7 +129,7 @@ const run = async () => {
         try{
             var cssFileContents = files.getFileContents(`./build/static/css/${cssFileName}`);
             var jsFileContents = files.getFileContents(`./build/static/js/${jsFileName}`);
-        } catch {
+        } catch(err) {
             console.log(chalk.red('Files are not present in build folder.'));
             return;
         }
