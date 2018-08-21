@@ -14,6 +14,8 @@ const chalk = require('chalk');
 //custom scripts
 const files = require('./lib/files');
 const helpers = require('./lib/helpers');
+const qb = require('./lib/qb');
+
 //init configstore
 const conf = new Configstore(pkg.name);
 
@@ -32,7 +34,7 @@ const run = async () => {
 
     //make sure user is running this from the root of their react directory
     if (!files.fileFolderExists(`${qbCLIConfName}`)) {
-        console.log(chalk.red('This qbcli command can only be run from the root of your directory.'));
+        console.log(chalk.red('This qbdeploy command can only be run from the root of your directory.'));
         return;
     } 
 
@@ -56,20 +58,20 @@ const run = async () => {
         conf.set(repositoryId, input);
 
     //if running the deploy
-    } else if (args._.includes('deploy')) {
+    } else if ( args._.includes('dev') || args._.includes('prod') ) {
         //running a spinner
         // const status = new Spinner('Authenticating you, please wait...');
         // status.start();  
 
         //make sure user is running this from the root of their react directory
         if (!files.fileFolderExists(`${qbCLIConfName}`)) {
-            console.log(chalk.red('This qbcli command can only be run from the root of your directory.'));
+            console.log(chalk.red('This qbdeploy command can only be run from the root of your directory.'));
             return;
         } 
 
         //make sure build folder exists
         if( !files.fileFolderExists('./build') ) {
-            console.log(chalk.red('This qbcli command can only be run from the root of your directory.  You must install qbcli before using it, and your react app must be built (npm run build).'));
+            console.log(chalk.red('This qbdeploy command can only be run from the root of your directory.  You must install qbcli before using it, and your react app must be built (npm run build).'));
             return;
         }
 
@@ -77,7 +79,7 @@ const run = async () => {
         const fileNamesInBuild = files.getFilesFromDirectory('./build');
 
         if( !fileNamesInBuild ) {
-            console.log(chalk.red('You may have installed the qbcli in the wrong directory.  Please reinstall in the top level directory of your React application.'));
+            console.log(chalk.red('You may have installed the qbdeploy in the wrong directory.  Please reinstall in the top level directory of your React application.'));
             return;
         }
 
@@ -87,7 +89,7 @@ const run = async () => {
         const configs = conf.get( repositoryId );
 
         if( !configs ) {
-            console.log(chalk.red('Project may never have been initialized - please run qbcli install.'));
+            console.log(chalk.red('Project may never have been initialized - please run qbdeploy install.'));
             return;
         }
 
@@ -100,9 +102,9 @@ const run = async () => {
             return;
         }
 
+        //create the filenames to be used for QB.
         var qbCSSFileName = null;
         var qbJSFileName = null;
-        //create the filenames to be used for QB.
         if( args._.includes('prod') ) {
             qbCSSFileName = `${extensionPrefix}${repositoryId}_index.css`;
             qbJSFileName = `${extensionPrefix}${repositoryId}_index.js`;
@@ -113,15 +115,23 @@ const run = async () => {
             console.log(chalk.green('Please specify dev or prod deployment.'));
             return;
         }
-        console.log( qbCSSFileName );
-        console.log( qbJSFileName );
+       
 
 
         //get file contents from the build folder
         var cssFileContents = files.getFileContents(`./build/${cssFileName}`);
         var jsFileContents = files.getFileContents(`./build/${jsFileName}`);
 
-
+        var { dbid, realm, apptoken, usertoken } = configs;
+        //add files to QB
+        Promise.all([
+            qb.addUpdateDbPage(dbid, realm, usertoken, apptoken, cssFileContents, qbCSSFileName),
+            qb.addUpdateDbPage(dbid, realm, usertoken, apptoken, jsFileContents, qbJSFileName)
+        ]).then((res)=>{
+            console.log(chalk.green('Deployment Successful!'));
+        }).catch((err)=>{
+            console.log(chalk.red('API call failure.'));
+        });
 
 
         // status.stop();
