@@ -32,11 +32,6 @@ const run = async () => {
     const args = minimist(process.argv.slice(2));
 
 
-    //make sure user is running this from the root of their react directory
-    if (!files.fileFolderExists(`${qbCLIConfName}`)) {
-        console.log(chalk.red('This qbdeploy command can only be run from the root of your directory.'));
-        return;
-    } 
 
     //if running the install
     if( args._.includes('init') ) {
@@ -62,6 +57,12 @@ const run = async () => {
         //running a spinner
         // const status = new Spinner('Authenticating you, please wait...');
         // status.start();  
+        
+        //make sure user is running this from the root of their react directory
+        if (!files.fileFolderExists(`${qbCLIConfName}`)) {
+            console.log(chalk.red('This qbdeploy command can only be run from the root of your directory.'));
+            return;
+        } 
 
         //make sure user is running this from the root of their react directory
         if (!files.fileFolderExists(`${qbCLIConfName}`)) {
