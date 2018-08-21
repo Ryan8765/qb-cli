@@ -57,7 +57,7 @@ const run = async () => {
         //running a spinner
         // const status = new Spinner('Authenticating you, please wait...');
         // status.start();  
-        
+
         //make sure user is running this from the root of their react directory
         if (!files.fileFolderExists(`${qbCLIConfName}`)) {
             console.log(chalk.red('This qbdeploy command can only be run from the root of your directory.'));
@@ -77,7 +77,13 @@ const run = async () => {
         }
 
         //get filenames in the build folder
-        const fileNamesInBuild = files.getFilesFromDirectory('./build');
+        const buildCSSFileNames = files.getFilesFromDirectory('./build/static/css');
+        const buildJSFileNames = files.getFilesFromDirectory('./build/static/js');
+
+        //concat filenames and return only filenames without .map
+        const fileNamesInBuild = buildCSSFileNames.concat(buildJSFileNames).filter((filenames)=>{
+            return !filenames.includes('.map');
+        });
 
         if( !fileNamesInBuild ) {
             console.log(chalk.red('You may have installed the qbdeploy in the wrong directory.  Please reinstall in the top level directory of your React application.'));
