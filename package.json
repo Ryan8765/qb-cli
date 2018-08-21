@@ -1,5 +1,5 @@
 {
-  "name": "qb-cli",
+  "name": "qbdeploy",
   "version": "1.0.0",
   "description": "Simple Quick Base deployment tool for React",
   "main": "index.js",
@@ -11,9 +11,6 @@
     "url": "git+https://github.com/Ryan8765/qb-cli.git"
   },
   "keywords": [
-    "Quick",
-    "Base",
-    "Deployment",
     "CLI"
   ],
   "author": "Ryan Haas",
