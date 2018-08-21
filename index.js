@@ -39,7 +39,7 @@ const run = async () => {
     } 
 
     //if running the install
-    if( args._.includes('install') ) {
+    if( args._.includes('init') ) {
         //clear the screen
         clear();
 
