@@ -126,8 +126,14 @@ const run = async () => {
 
 
         //get file contents from the build folder
-        var cssFileContents = files.getFileContents(`./build/${cssFileName}`);
-        var jsFileContents = files.getFileContents(`./build/${jsFileName}`);
+        try{
+            var cssFileContents = files.getFileContents(`./build/static/css/${cssFileName}`);
+            var jsFileContents = files.getFileContents(`./build/static/js/${jsFileName}`);
+        } catch {
+            console.log(chalk.red('Files are not present in build folder.'));
+            return;
+        }
+        
 
         var { dbid, realm, apptoken, usertoken } = configs;
         //add files to QB
