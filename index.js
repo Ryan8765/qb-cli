@@ -103,6 +103,7 @@ const run = async () => {
         //get filenames in the build folder
         const cssFileName = helpers.getFileNameFromExt_h(fileNamesInBuild, '.css');
         const jsFileName = helpers.getFileNameFromExt_h(fileNamesInBuild, '.js');
+        console.log("JS File Name: " + jsFileName);
 
         if( !cssFileName || !jsFileName ) {
             console.log(chalk.red('Make sure you have run npm run build for your React application'));
@@ -129,6 +130,7 @@ const run = async () => {
         try{
             var cssFileContents = files.getFileContents(`./build/static/css/${cssFileName}`);
             var jsFileContents = files.getFileContents(`./build/static/js/${jsFileName}`);
+            console.log("JS File Contents: " + jsFileContents.substring(0,20));
         } catch(err) {
             console.log(chalk.red('Files are not present in build folder.'));
             return;
