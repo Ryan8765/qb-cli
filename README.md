@@ -1,5 +1,5 @@
 # QBDeploy
-Quick Base CLI tool for easy deployments to QB for React applications.
+QB CLI tool for easy deployments to QB for React applications.
 
 ## Commands
 
