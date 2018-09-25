@@ -102,7 +102,6 @@ const run = async () => {
         //get filenames in the build folder
         const cssFileName = helpers.getFileNameFromExt_h(fileNamesInBuild, '.css');
         const jsFileName = helpers.getFileNameFromExt_h(fileNamesInBuild, '.js');
-        console.log("JS File Name: " + jsFileName);
 
         if( !cssFileName || !jsFileName ) {
             console.log(chalk.red('Make sure you have run npm run build for your React application'));
@@ -134,13 +133,8 @@ const run = async () => {
             };
             var cssFileContents = files.getFileContents(`./build/static/css/${cssFileName}`);
             var jsFileContents = files.getFileContents(`./build/static/js/${jsFileName}`);
+            //make sure no CDATA's are contained in the jsFIleContents - if there is modify it so the cdata is replaced
             jsFileContents = jsFileContents.replaceAll("]]>", "]]]]><![CDATA[>");
-            // jsFileContents = jsFileContents.replace("]]>", "]]]]><![CDATA[>");
-            console.log(jsFileContents.indexOf("]]>"));
-            // console.log('_____________________________________________________________');
-            // console.log(jsFileContents);
-            // console.log('_____________________________________________________________');
-
         } catch(err) {
             console.log(chalk.red('Files are not present in build folder.'));
             return;
@@ -153,10 +147,8 @@ const run = async () => {
             qb.addUpdateDbPage(dbid, realm, usertoken, apptoken, cssFileContents, qbCSSFileName),
             qb.addUpdateDbPage(dbid, realm, usertoken, apptoken, jsFileContents, qbJSFileName)
         ]).then((res)=>{
-            // console.log(res[1]);
             console.log(chalk.green('Deployment Successful!'));
         }).catch((err)=>{
-            // console.log(err);
             console.log(chalk.red('API call failure.  All files weren\'t deployed successfully'));
         });
 
