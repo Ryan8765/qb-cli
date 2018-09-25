@@ -32,7 +32,6 @@ const run = async () => {
     const args = minimist(process.argv.slice(2));
 
 
-
     //if running the install
     if( args._.includes('init') ) {
         //clear the screen
@@ -128,9 +127,20 @@ const run = async () => {
 
         //get file contents from the build folder
         try{
+
+            String.prototype.replaceAll = function (search, replacement) {
+                var target = this;
+                return target.replace(new RegExp(search, 'g'), replacement);
+            };
             var cssFileContents = files.getFileContents(`./build/static/css/${cssFileName}`);
             var jsFileContents = files.getFileContents(`./build/static/js/${jsFileName}`);
-            console.log("JS File Contents: " + jsFileContents.substring(0,20));
+            jsFileContents = jsFileContents.replaceAll("]]>", "]]]]><![CDATA[>");
+            // jsFileContents = jsFileContents.replace("]]>", "]]]]><![CDATA[>");
+            console.log(jsFileContents.indexOf("]]>"));
+            // console.log('_____________________________________________________________');
+            // console.log(jsFileContents);
+            // console.log('_____________________________________________________________');
+
         } catch(err) {
             console.log(chalk.red('Files are not present in build folder.'));
             return;
@@ -143,9 +153,11 @@ const run = async () => {
             qb.addUpdateDbPage(dbid, realm, usertoken, apptoken, cssFileContents, qbCSSFileName),
             qb.addUpdateDbPage(dbid, realm, usertoken, apptoken, jsFileContents, qbJSFileName)
         ]).then((res)=>{
+            // console.log(res[1]);
             console.log(chalk.green('Deployment Successful!'));
         }).catch((err)=>{
-            console.log(chalk.red('API call failure.'));
+            // console.log(err);
+            console.log(chalk.red('API call failure.  All files weren\'t deployed successfully'));
         });
 
 
