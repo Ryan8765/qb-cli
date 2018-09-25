@@ -9,6 +9,8 @@ const CLI = require ('clui');
 const Spinner = CLI.Spinner;
 const minimist = require('minimist');
 const chalk = require('chalk');
+const Cryptr = require('cryptr');
+const cryptoRandomString = require('crypto-random-string');
 
 
 //custom scripts
@@ -34,17 +36,27 @@ const run = async () => {
 
     //if running the install
     if( args._.includes('init') ) {
+
         //clear the screen
         clear();
 
         const input = await userInput.getInput();
         const repositoryId = input.repositoryId;
+        const salt = cryptoRandomString(25);
+
+        const cryptr = new Cryptr(salt);
+
+        input.apptoken = cryptr.encrypt(input.apptoken);
+        input.usertoken = cryptr.encrypt(input.usertoken);
+
+        
 
         /*
             Save repository ID to local config and everything else to local
         */
         const data = {
-            repositoryId
+            repositoryId,
+            salt
         };
         //save the repository ID to local JSON file
         files.saveJSONToFile(`${qbCLIConfName}`, data);
@@ -142,25 +154,38 @@ const run = async () => {
         
 
         var { dbid, realm, apptoken, usertoken } = configs;
-        //add files to QB
+
+        //get salt for decryption
+        const { salt } = files.readJSONFile(`./${qbCLIConfName}`);
+        const cryptr = new Cryptr(salt);
+
+        //decrypt usertoken and password
+        usertoken = cryptr.decrypt(usertoken);
+        apptoken = cryptr.decrypt(apptoken);
+
+        /*
+            Add files to QB
+        */
+
+        //start spinner
+        const status = new Spinner('Processing request, please wait...');
+        status.start();
+
+        //api calls
         Promise.all([
             qb.addUpdateDbPage(dbid, realm, usertoken, apptoken, cssFileContents, qbCSSFileName),
             qb.addUpdateDbPage(dbid, realm, usertoken, apptoken, jsFileContents, qbJSFileName)
         ]).then((res)=>{
+            status.stop();
             console.log(chalk.green('Deployment Successful!'));
         }).catch((err)=>{
+            status.stop();
             console.log(chalk.red('API call failure.  All files weren\'t deployed successfully'));
         });
 
 
-        // status.stop();
     }
-
-    
-
-    //running a spinner
-    // const status = new Spinner('Authenticating you, please wait...');
-    // status.start();     
+  
 }
 
 run();
