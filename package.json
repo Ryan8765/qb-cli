@@ -1,6 +1,6 @@
 {
   "name": "qbdeploy",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Simple Quick Base deployment tool for React",
   "main": "index.js",
   "scripts": {
