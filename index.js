@@ -158,9 +158,6 @@ const run = async () => {
             return;
         }
 
-        console.log(qbCSSFileName, qbJSFileName);
-       
-
 
         //get file contents from the build folder
         try{
