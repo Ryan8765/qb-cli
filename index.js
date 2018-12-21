@@ -11,6 +11,9 @@ const minimist = require('minimist');
 const chalk = require('chalk');
 const Cryptr = require('cryptr');
 const cryptoRandomString = require('crypto-random-string');
+const fs = require('fs');
+const parse = require('parse-gitignore');
+const path = require('path');
 
 
 //custom scripts
@@ -23,8 +26,9 @@ const conf = new Configstore(pkg.name);
 
 //configs
 const qbCLIConfName = 'qbcli.json';
-const extensionPrefix = 'MCF_';
-const extensionPrefixDev = 'MCF_d_';
+var extensionPrefix = 'MCF_';
+var extensionPrefixDev = 'MCF_d_';
+const gitIgnoreFileName = './.gitignore';
 
 
 
@@ -42,14 +46,14 @@ const run = async () => {
 
         const input = await userInput.getInput();
         const repositoryId = input.repositoryId;
+        const customPrefix = input.customPrefix;
         const salt = cryptoRandomString(25);
 
         const cryptr = new Cryptr(salt);
 
+        //encrypt app & usertoken
         input.apptoken = cryptr.encrypt(input.apptoken);
         input.usertoken = cryptr.encrypt(input.usertoken);
-
-        
 
         /*
             Save repository ID to local config and everything else to local
@@ -58,22 +62,32 @@ const run = async () => {
             repositoryId,
             salt
         };
+
         //save the repository ID to local JSON file
         files.saveJSONToFile(`${qbCLIConfName}`, data);
         //save to local
         conf.set(repositoryId, input);
 
+        /*
+            Update .gitignore if present to make sure it excludes qbcli.json
+        */
+        var pathToGitignore = path.join(__dirname, gitIgnoreFileName);
+        if (files.fileFolderExists(pathToGitignore)) {
+            //gets all contents of gitignore
+            const gitIgnoreFilesArray = parse(fs.readFileSync(pathToGitignore));
+
+            //only append if the qbcli.json isn't alrady listed
+            if ( gitIgnoreFilesArray.indexOf(`${qbCLIConfName}`) < 0 ) {
+                var writeStream = fs.createWriteStream(pathToGitignore, { 'flags': 'a' });
+                // use {'flags': 'a'} to append and {'flags': 'w'} to erase and write a new file
+                writeStream.write(`\n${qbCLIConfName}`);
+                writeStream.end();
+            }
+        } 
+
     //if running the deploy
     } else if ( args._.includes('dev') || args._.includes('prod') ) {
-        //running a spinner
-        // const status = new Spinner('Authenticating you, please wait...');
-        // status.start();  
 
-        //make sure user is running this from the root of their react directory
-        if (!files.fileFolderExists(`${qbCLIConfName}`)) {
-            console.log(chalk.red('This qbdeploy command can only be run from the root of your directory.'));
-            return;
-        } 
 
         //make sure user is running this from the root of their react directory
         if (!files.fileFolderExists(`${qbCLIConfName}`)) {
@@ -123,6 +137,16 @@ const run = async () => {
         //create the filenames to be used for QB.
         var qbCSSFileName = null;
         var qbJSFileName = null;
+        var { customPrefix } = configs;
+
+        //if there is a customprefix present, use that instead of "MCF_" & "MCF_d_"
+        if( customPrefix ) {
+            extensionPrefix = `${customPrefix}_`;
+            extensionPrefixDev = `${customPrefix}_d_`;
+        }
+
+       
+
         if( args._.includes('prod') ) {
             qbCSSFileName = `${extensionPrefix}${repositoryId}_index.css`;
             qbJSFileName = `${extensionPrefix}${repositoryId}_index.js`;
@@ -133,6 +157,8 @@ const run = async () => {
             console.log(chalk.green('Please specify dev or prod deployment.'));
             return;
         }
+
+        console.log(qbCSSFileName, qbJSFileName);
        
 
 
